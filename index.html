@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DHF Epi Analyzer + Google Sheets</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+:root{--bg:#f6f7f9;--sf:#fff;--tx:#1d2330;--mu:#667085;--bd:#e1e5ec;--ac:#c2410c;--c3:#2563eb;--c2:#0f766e;--c4:#a16207;--ok:#15803d;--bad:#b91c1c;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--sf:#1b1f29;--tx:#e8ebf2;--mu:#9aa3b5;--bd:#2c3240;--ac:#fb923c;--c3:#60a5fa;--c2:#2dd4bf;--c4:#facc15;--ok:#4ade80;--bad:#f87171;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12151c;--sf:#1b1f29;--tx:#e8ebf2;--mu:#9aa3b5;--bd:#2c3240;--ac:#fb923c;--c3:#60a5fa;--c2:#2dd4bf;--c4:#facc15;--ok:#4ade80;--bad:#f87171;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 Sarabun,system-ui,sans-serif}
+header{padding:18px 16px 6px;max-width:1200px;margin:auto}h1{font-size:20px;margin:0}header p{margin:2px 0 0;color:var(--mu);font-size:13px}
+main{max-width:1200px;margin:auto;padding:8px 16px 40px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+button,select,input,textarea{font:inherit;color:var(--tx)}
+.tab,.pill{border:1px solid var(--bd);background:var(--sf);padding:7px 14px;border-radius:8px;cursor:pointer}
+.tab.on,.pill.on{background:var(--ac);border-color:var(--ac);color:#fff}.pill{padding:4px 12px;border-radius:99px;font-size:14px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:15px}
+.btn{background:var(--ac);color:#fff;border:0;padding:8px 16px;border-radius:8px;cursor:pointer}.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+label{display:block;font-size:13px;color:var(--mu)}input,select,textarea{width:100%;padding:7px 9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);margin-top:3px}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}.kp div{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px}.kp b{display:block;font-size:22px;color:var(--ac)}.kp span{font-size:12px;color:var(--mu)}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:5px 8px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}th{color:var(--mu);font-weight:600}
+.cw{position:relative}.m{padding:8px 12px;border-radius:8px;margin-top:10px;background:var(--bg);border:1px solid var(--bd)}.m.e{color:var(--bad)}.m.s{color:var(--ok)}.mu{color:var(--mu);font-size:13px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.row>*{flex:1;min-width:140px}.row .btn{flex:0 0 auto}
+.dz{border:2px dashed var(--bd);border-radius:12px;padding:28px;text-align:center;cursor:pointer;color:var(--mu)}.dz.o{border-color:var(--ac)}
+.hide{display:none}.al{color:var(--bad);font-weight:600}
+.hc{background:none;border:0}
+#mapc{height:560px;border-radius:12px;border:1px solid var(--bd);margin-top:10px}
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-layer{position:absolute;left:0;top:0}.leaflet-container{overflow:hidden;background:#e5e7eb;font:inherit;touch-action:none}.leaflet-container .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}.leaflet-container .leaflet-tile{max-width:none!important}.leaflet-tile{visibility:hidden;user-select:none}.leaflet-tile-loaded{visibility:inherit}.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-marker-pane{z-index:600}.leaflet-popup-pane{z-index:700}.leaflet-map-pane svg{z-index:200}.leaflet-zoom-animated{transform-origin:0 0}.leaflet-zoom-anim .leaflet-zoom-animated{transition:transform .25s cubic-bezier(0,0,.25,1)}.leaflet-pane>svg *{pointer-events:none}.leaflet-pane>svg path.leaflet-interactive{pointer-events:auto;cursor:pointer}.leaflet-grab{cursor:grab}.leaflet-dragging .leaflet-grab{cursor:move}.leaflet-crosshair,.leaflet-crosshair .leaflet-interactive{cursor:crosshair}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both}.leaflet-right .leaflet-control{float:right}.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-right{right:0}.leaflet-top .leaflet-control{margin-top:10px}.leaflet-left .leaflet-control{margin-left:10px}.leaflet-bottom .leaflet-control{margin-bottom:10px}.leaflet-right .leaflet-control{margin-right:10px}.leaflet-bar{box-shadow:0 1px 5px rgba(0,0,0,.4);border-radius:4px}.leaflet-bar a{display:block;width:30px;height:30px;line-height:30px;text-align:center;text-decoration:none;background:#fff;color:#000;border-bottom:1px solid #ccc;font:bold 18px monospace}.leaflet-bar a:last-child{border:0}.leaflet-control-scale-line{border:2px solid #777;border-top:none;padding:1px 5px;background:rgba(255,255,255,.8);color:#333;font-size:11px}.leaflet-control-attribution{background:rgba(255,255,255,.8);font-size:11px;padding:0 5px;color:#333}.leaflet-control-attribution a{color:#06c}
+.leaflet-popup{position:absolute;text-align:center}.leaflet-popup-content-wrapper{padding:1px;text-align:left;border-radius:10px;background:#fff;color:#222;box-shadow:0 3px 14px rgba(0,0,0,.4)}.leaflet-popup-content{margin:12px 22px 12px 16px;line-height:1.35;font-size:13px}.leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-left:-20px;overflow:hidden;pointer-events:none}.leaflet-popup-tip{width:16px;height:16px;margin:-9px auto 0;transform:rotate(45deg);background:#fff}.leaflet-popup-close-button{position:absolute;top:0;right:0;padding:3px 8px;color:#757575;text-decoration:none;font-size:18px}
+</style></head><body>
+<header><h1>🦟 DHF Epi Analyzer</h1><p>ระบบนำเข้า บันทึก และวิเคราะห์ข้อมูลเฝ้าระวังไข้เลือดออก ตามหัวตารางไฟล์ DHF.xlsx · ข้อมูลทั้งหมดอยู่ใน Datasheet เดียวกัน</p></header>
+<main>
+<nav id="nav"><button class="tab on" data-t="ana">วิเคราะห์</button><button class="tab" data-t="map">แผนที่ (Spot map)</button><button class="tab" data-t="imp">นำเข้าไฟล์</button><button class="tab" data-t="frm">บันทึกข้อมูล</button><button class="tab" data-t="tbl">ตารางข้อมูล (Datasheet)</button></nav>
+
+<section id="imp" class="hide">
+<div class="card"><h3>นำเข้าไฟล์ Excel / CSV</h3>
+<div class="dz" id="dz">ลากไฟล์มาวาง หรือคลิกเพื่อเลือกไฟล์ (.xlsx .xls .csv)<input type="file" id="fi" accept=".xlsx,.xls,.csv" class="hide"></div>
+<p class="mu">หัวตารางต้องตรงกับแม่แบบ: ลำดับ · ชื่อ - นามสกุล · เพศ · อายุ · ที่อยู่ · ว/ด/ป รับแจ้ง · เวลารับแจ้ง · ว/ด/ป เริ่มป่วย · ว/ด/ป พบผู้ป่วย · ชื่อโรค · รับรายงานจาก · ประจำปี (รองรับวันที่แบบ พ.ศ. และ ค.ศ.)</p>
+<div class="row"><button class="btn g" id="tpl">ดาวน์โหลดแม่แบบ</button><button class="btn g" id="demo">สร้างข้อมูลสมมติเพื่อทดลอง</button></div>
+<div id="impMsg"></div><div id="impPrev"></div></div></section>
+
+<section id="frm" class="hide"><div class="card"><h3 id="ft">บันทึกผู้ป่วยรายใหม่</h3>
+<div class="grid" id="ff"></div>
+<div class="row" style="margin-top:14px"><button class="btn" id="fs">บันทึก</button><button class="btn g" id="fc">ล้างฟอร์ม</button><button class="btn g" id="fp">เลือกพิกัดจากแผนที่</button></div><div id="fm"></div></div></section>
+
+<section id="tbl" class="hide"><div class="card"><h3>เชื่อมต่อ Google Sheets</h3>
+<div class="grid"><label>Web App URL (Apps Script, ลงท้าย /exec)<input id="sU" placeholder="https://script.google.com/macros/s/.../exec"></label><label>รหัสผ่าน (TOKEN ที่ตั้งใน Code.gs)<input id="sT" type="password"></label></div>
+<div class="row" style="margin-top:10px"><label style="display:flex;gap:8px;align-items:center;flex:0 0 auto"><input id="sA" type="checkbox" style="width:auto;margin:0">ซิงก์อัตโนมัติ (ดึงตอนเปิดแอพ + ส่งทุกครั้งที่บันทึก/ลบ/นำเข้า)</label><button class="btn g" id="sD">ดึงข้อมูลจาก Sheet</button><button class="btn g" id="sP">ส่งข้อมูลทั้งหมดขึ้น Sheet</button></div><div id="sm"></div></div><div class="card">
+<div class="row"><label>ค้นหา<input id="q" placeholder="ชื่อ ที่อยู่ โรค ฯลฯ"></label><button class="btn g" id="qc">ตรวจคุณภาพข้อมูล</button><button class="btn" id="ex">ส่งออก Excel</button><button class="btn g" id="cl">ลบข้อมูลทั้งหมด</button></div>
+<div id="qm"></div><p class="mu" id="tc"></p><div class="sc" id="tt"></div></div></section>
+
+<section id="map" class="hide"><div class="card"><div class="row"><label>ปี (พ.ศ.)<select id="my"></select></label><label>ชื่อโรค<select id="md"></select></label><label>รัศมีวงกลม (เมตร)<input id="mr" type="number" min="1" value="100"></label><button class="btn g" id="mc">ส่งออก CSV (Google My Maps)</button><button class="btn g" id="mg">ส่งออก GeoJSON</button></div>
+<div class="row" style="margin-top:10px"><label>ชื่อ รพ.สต. (ศูนย์กลาง)<input id="hn" placeholder="เช่น รพ.สต.บ้าน..."></label><label>ละติจูด<input id="hy"></label><label>ลองจิจูด<input id="hx"></label><button class="btn g" id="hs">บันทึกที่ตั้ง</button><button class="btn g" id="hd">ลบที่ตั้ง</button></div>
+<p class="mu" id="mi"></p><div id="mapc"></div><div id="pk"></div><div id="mm"></div>
+<p class="mu">วิธีบันทึกพิกัด: คลิกบนแผนที่เพื่อมาร์คจุด แล้วเลือก "นำไปกรอกในฟอร์ม" หรือกำหนดให้ผู้ป่วยที่ยังไม่มีพิกัด · หรือพิมพ์ละติจูด/ลองจิจูดในหน้าบันทึกข้อมูล · ไฟล์นำเข้าที่มีคอลัมน์พิกัดท้ายตารางจะถูกอ่านอัตโนมัติ<br>วงกลมแดงจางรัศมี 100 ม. ปรับขนาดตามมาตราส่วนแผนที่จริง จุดที่ซ้อนทับกันจะเข้มขึ้น · หมายเหตุ: หน้าเว็บที่โฮสต์นี้โหลดภาพแผนที่พื้นหลัง (Google/OpenStreetMap) ไม่ได้ จึงแสดงเฉพาะจุด วงรัศมี และสเกล ใช้ปุ่มส่งออกเพื่อเปิดต่อใน Google My Maps</p></div></section>
+<section id="ana">
+<div class="card"><div class="row"><label>ปี (พ.ศ.)<select id="fy"></select></label><label>ชื่อโรค<select id="fd"></select></label><label>ประชากร (สำหรับอัตราป่วย/แสน)<input id="pop" type="number" min="0" placeholder="เช่น 25000"></label></div></div>
+<nav id="sub"><button class="pill on" data-v="ov">ภาพรวม</button><button class="pill" data-v="pe">บุคคล</button><button class="pill" data-v="ti">เวลา</button><button class="pill" data-v="pl">สถานที่ / การกระจุกตัว</button><button class="pill" data-v="su">เฝ้าระวัง / ตรวจจับการระบาด</button></nav>
+<div id="anb"></div></section>
+</main>
+<script>
+if(!window.claude)window.claude={use:async()=>({save:async({filename,data})=>{const a=document.createElement('a');a.href=URL.createObjectURL(data);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5e3)}})};
+const K=['no','name','sex','age','addr','dRep','tRep','dOn','dSeen','dis','src','yr','lat','lng'];
+const H=['ลำดับ','ชื่อ - นามสกุล','เพศ','อายุ','ที่อยู่','ว/ด/ป รับแจ้ง','เวลารับแจ้ง','ว/ด/ป เริ่มป่วย','ว/ด/ป พบผู้ป่วย','ชื่อโรค','รับรายงานจาก','ประจำปี','ละติจูด','ลองจิจูด'];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let D=[],ID=0,V={g:'week',b:'dOn',a:'v',cd:28,t:'ov',ed:null},IMP=null,CH={};
+try{D=JSON.parse(localStorage.getItem('dhf')||'[]');ID=D.reduce((m,r)=>Math.max(m,r._id||0),0);$('#pop').value=localStorage.getItem('dhfpop')||''}catch(e){}
+D.forEach(r=>r.uid??='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+const save=()=>{try{localStorage.setItem('dhf',JSON.stringify(D))}catch(e){}};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const isn=v=>typeof v==='number'&&isFinite(v),nz=s=>String(s??'').replace(/[\s.\-]/g,'');
+const fd=s=>{if(!s)return'';const[y,m,d]=s.split('-');return `${+d}/${+m}/${+y+543}`};
+const days=(a,b)=>a&&b?Math.round((Date.parse(b)-Date.parse(a))/864e5):null;
+const addD=(s,n)=>new Date(Date.parse(s)+n*864e5).toISOString().slice(0,10);
+const pct=(a,p)=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),i=(s.length-1)*p,l=Math.floor(i);return s[l]+(s[Math.min(l+1,s.length-1)]-s[l])*(i-l)};
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const sd=a=>a.length<2?0:Math.sqrt(a.reduce((s,x)=>s+(x-mean(a))**2,0)/(a.length-1));
+const f1=x=>x==null||isNaN(x)?'–':(Math.round(x*10)/10).toLocaleString('th-TH');
+const rng=a=>a.length?`${f1(Math.min(...a))}–${f1(Math.max(...a))}`:'–';
+const dtf=r=>r.dOn||r.dSeen||r.dRep;
+const msg=(s,t,c)=>{$(s).innerHTML=t?`<div class="m ${c||''}">${t}</div>`:''};
+// ---------- parsing ----------
+function iso(y,m,d){if(y>2400)y-=543;if(y<100)y+=2000;const t=new Date(Date.UTC(y,m-1,d));return t.getUTCMonth()==m-1&&t.getUTCDate()==d?t.toISOString().slice(0,10):''}
+function pDate(v){if(v==null||v==='')return'';if(typeof v==='number')return v>59?new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10):'';
+ const m=String(v).match(/(\d{1,4})[\/\-.](\d{1,2})[\/\-.](\d{1,4})/);if(!m)return'';return+m[1]>31?iso(+m[1],+m[2],+m[3]):iso(+m[3],+m[2],+m[1])}
+function pTime(v){if(typeof v==='number'&&v>=0&&v<1){const t=Math.round(v*1440);return String(Math.floor(t/60)%24).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
+ const m=String(v??'').match(/(\d{1,2})\s*[:.]\s*(\d{2})/);return m?m[1].padStart(2,'0')+':'+m[2]:''}
+function pAge(v){if(isn(v))return v;const s=String(v??''),m=s.match(/\d+(\.\d+)?/);if(!m)return'';let a=+m[0];if(!/ปี/.test(s)){if(/เดือน/.test(s))a/=12;else if(/วัน/.test(s))a/=365}return a}
+const pSex=v=>{const s=String(v??'').trim();return/^(ช|ชาย|m|male)$/i.test(s)?'ชาย':/^(ญ|หญิง|f|female)$/i.test(s)?'หญิง':''};
+function gp(a,b){const n=v=>{if(isn(v))return v;const x=parseFloat(String(v??'').replace(',','.'));return isNaN(x)?'':x};let la=n(a),ln=n(b);if(la===''||ln==='')return{lat:'',lng:''};if(Math.abs(la)>90&&Math.abs(ln)<=90){const t=la;la=ln;ln=t}return Math.abs(la)<=90&&Math.abs(ln)<=180?{lat:la,lng:ln}:{lat:'',lng:''}}
+function mk(o){const r={_id:++ID,uid:o.uid||('u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)),no:o.no??'',name:String(o.name||'').trim(),sex:pSex(o.sex),age:pAge(o.age),addr:String(o.addr||'').trim(),dRep:pDate(o.dRep),tRep:pTime(o.tRep),dOn:pDate(o.dOn),dSeen:pDate(o.dSeen),dis:String(o.dis||'').trim(),src:String(o.src||'').trim(),...gp(o.lat,o.lng)};
+ let y=parseInt(o.yr);if(y>=1900&&y<2400)y+=543;if(!(y>2400)){const d=dtf(r);y=d?+d.slice(0,4)+543:''}r.yr=y;return r}
+const dupK=r=>[r.name,r.age,r.dOn,r.addr].join('|');
+function nums(rows){let n=D.reduce((m,r)=>Math.max(m,+r.no||0),0);rows.forEach(r=>{if(r.no===''||r.no==null)r.no=++n})}
+// ---------- tabs ----------
+$('#nav').onclick=e=>{const t=e.target.dataset.t;if(!t)return;$$('#nav .tab').forEach(b=>b.classList.toggle('on',b===e.target));['imp','frm','tbl','ana','map'].forEach(s=>$('#'+s).classList.toggle('hide',s!==t));if(t==='tbl')tb();if(t==='ana')an();if(t==='map')mp();if(t==='frm')lists()};
+$('#sub').onclick=e=>{const v=e.target.dataset.v;if(!v)return;V.t=v;$$('#sub .pill').forEach(b=>b.classList.toggle('on',b===e.target));an()};
+// ---------- import ----------
+const dz=$('#dz'),fi=$('#fi');dz.onclick=()=>fi.click();fi.onchange=()=>fi.files[0]&&rd(fi.files[0]);
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('o')};dz.ondragleave=()=>dz.classList.remove('o');dz.ondrop=e=>{e.preventDefault();dz.classList.remove('o');e.dataTransfer.files[0]&&rd(e.dataTransfer.files[0])};
+function rd(f){const fr=new FileReader();fr.onload=e=>{try{
+ const wb=XLSX.read(e.target.result,{type:'array'}),a=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''});
+ const hn=H.map(nz),hi=a.findIndex(r=>r.filter(c=>hn.includes(nz(c))).length>=3);
+ if(hi<0)return msg('#impMsg','ไม่พบหัวตารางที่ตรงกับแม่แบบ (ต้องมีอย่างน้อย 3 คอลัมน์ชื่อตรงกัน)','e');
+ const hd=a[hi].map(nz),map=hn.map(h=>hd.indexOf(h));
+ const fx=(i,re)=>{if(map[i]<0)map[i]=hd.findIndex(h=>re.test(h))};fx(12,/lat|ละติจู|ละติจุ/i);fx(13,/lon|lng|ลองจิ|ลองติ/i);
+ if(map[12]<0&&map[13]<0&&a.slice(hi+1,hi+8).some(r=>isn(r[12])&&isn(r[13]))){map[12]=12;map[13]=13}
+ const rows=a.slice(hi+1).filter(r=>r.some(c=>c!=='')).map(r=>{const o={};K.forEach((k,i)=>o[k]=map[i]<0?'':r[map[i]]);return mk(o)});
+ IMP={rows,miss:H.filter((h,i)=>i<12&&map[i]<0),fn:f.name};prev()}catch(x){msg('#impMsg','อ่านไฟล์ไม่สำเร็จ: '+esc(x.message),'e')}};fr.readAsArrayBuffer(f)}
+function prev(){const{rows,miss,fn}=IMP,nd=rows.filter(r=>!dtf(r)).length,ng=rows.filter(r=>isn(r.lat)).length;
+ msg('#impMsg',`อ่านไฟล์ <b>${esc(fn)}</b> ได้ ${rows.length} แถว`+(miss.length?`<br><span class="al">ไม่พบคอลัมน์: ${miss.join(', ')}</span>`:'<br>หัวตารางครบทุกคอลัมน์')+(nd?`<br>มี ${nd} แถวที่ไม่มีวันที่ที่อ่านได้`:'')+`<br>พบพิกัดละติจูด/ลองจิจูด ${ng} แถว`,miss.length?'':'s');
+ $('#impPrev').innerHTML=`<div class="sc" style="margin-top:12px">${tbl(H,rows.slice(0,8).map(r=>K.map(k=>/^d/.test(k)&&k!=='dis'?fd(r[k]):r[k])))}</div>
+ <div class="row" style="margin-top:12px"><label>วิธีนำเข้า<select id="im"><option value="a">เพิ่มต่อท้ายข้อมูลเดิม</option><option value="r">แทนที่ข้อมูลเดิมทั้งหมด</option></select></label><label>รายการซ้ำ (ชื่อ+อายุ+วันเริ่มป่วย+ที่อยู่)<select id="id"><option value="s">ข้ามรายการซ้ำ</option><option value="k">นำเข้าทั้งหมด</option></select></label><button class="btn" id="ic">ยืนยันนำเข้า</button></div>`;
+ $('#ic').onclick=()=>{let r=IMP.rows;if($('#im').value==='r')D=[];if($('#id').value==='s'){const s=new Set(D.map(dupK));r=r.filter(x=>!s.has(dupK(x))&&s.add(dupK(x)))}
+  nums(r);D.push(...r);save();sy($('#im').value==='r'?{op:'replace',rows:D.map(toRow)}:{op:'upsert',rows:r.map(toRow)});msg('#impMsg',`นำเข้า ${r.length} รายการแล้ว (รวมใน Datasheet ${D.length} รายการ)`,'s');$('#impPrev').innerHTML='';IMP=null}}
+async function dl(name,rows){const c=window.claude&&await claude.use('downloads');if(!c)return msg('#impMsg','ฟังก์ชันดาวน์โหลดไม่พร้อมใช้งานในมุมมองนี้','e');
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H,...rows]),'Sheet1');
+ try{await c.save({filename:name,data:new Blob([XLSX.write(wb,{type:'array',bookType:'xlsx'})])})}catch(e){if(e.code!=='declined')msg('#impMsg','บันทึกไฟล์ไม่สำเร็จ ('+esc(e.code||e.message)+')','e')}}
+$('#tpl').onclick=()=>dl('DHF_template.xlsx',[]);
+$('#ex').onclick=()=>dl('DHF_data.xlsx',D.map(r=>[r.no,r.name,r.sex,r.age,r.addr,fd(r.dRep),r.tRep,fd(r.dOn),fd(r.dSeen),r.dis,r.src,r.yr,r.lat,r.lng]));
+$('#demo').onclick=()=>{const V4=['ต.บ้านบึง ม.1','ต.บ้านบึง ม.4','ต.หนองซ้ำซาก ม.2','ต.นาป่า ม.7'],ds=['DF','DF','DF','DHF','DHF','DSS'],sr=['รพ.สต.','โรงพยาบาล','คลินิก'],rows=[];
+ for(let y=2021;y<=2025;y++)for(let i=0,n=60+(y%2)*70;i<n;i++){const m=Math.max(1,Math.min(12,Math.round(7.5+(Math.random()+Math.random()+Math.random()-1.5)*3.2))),on=iso(y,m,1+Math.floor(Math.random()*28)),se=addD(on,1+Math.floor(Math.random()*3)),rp=addD(se,Math.floor(Math.random()*3));
+  rows.push(mk({name:'ผู้ป่วยทดสอบ '+(rows.length+1),sex:Math.random()<.52?'ชาย':'หญิง',age:Math.floor(Math.random()**1.5*62),addr:'บ้านเลขที่ '+(1+Math.floor(Math.random()*90))+' '+V4[Math.floor(Math.random()*4)],dRep:rp,tRep:String(8+Math.floor(Math.random()*10))+':'+String(Math.floor(Math.random()*60)).padStart(2,'0'),dOn:on,dSeen:se,dis:ds[Math.floor(Math.random()*6)],src:sr[Math.floor(Math.random()*3)],yr:y+543,lat:14+Math.random()*.03,lng:100.5+Math.random()*.03}))}
+ nums(rows);D.push(...rows);save();msg('#impMsg',`เพิ่มข้อมูลสมมติ ${rows.length} รายการ (ชื่อ "ผู้ป่วยทดสอบ") สำหรับทดลองระบบ ลบได้ที่แท็บตารางข้อมูล`,'s')};
+// ---------- form ----------
+const FT={no:['number','ลำดับ (เว้นว่าง = อัตโนมัติ)'],name:['text','ชื่อ - นามสกุล'],sex:['sex','เพศ'],age:['number','อายุ (ปี; ทารกใช้ทศนิยม เช่น 0.5)'],addr:['area','ที่อยู่ (ระบุ ต. ม. อ. เพื่อวิเคราะห์พื้นที่)'],dRep:['date','ว/ด/ป รับแจ้ง'],tRep:['time','เวลารับแจ้ง'],dOn:['date','ว/ด/ป เริ่มป่วย'],dSeen:['date','ว/ด/ป พบผู้ป่วย'],dis:['dis','ชื่อโรค'],src:['text','รับรายงานจาก'],yr:['number','ประจำปี (พ.ศ.; เว้นว่าง = คำนวณจากวันเริ่มป่วย)'],lat:['text','ละติจูด (เช่น 14.0123)'],lng:['text','ลองจิจูด (เช่น 100.5123)']};
+$('#ff').innerHTML=K.map(k=>{const[t,l]=FT[k];return `<label>${l}`+(t==='dis'?`<select id="f_dis"></select>`:t==='sex'?`<select id="f_${k}"><option value="">ไม่ระบุ</option><option>ชาย</option><option>หญิง</option></select>`:t==='area'?`<textarea id="f_${k}" rows="2"></textarea>`:`<input id="f_${k}" type="${t}"${t==='number'?' step="any" min="0"':''}${k==='dis'?' list="dl_d"':k==='src'?' list="dl_s"':''}>`)+`</label>`}).join('')+'<datalist id="dl_d"></datalist><datalist id="dl_s"></datalist>';
+function lists(){const u=k=>[...new Set(D.map(r=>r[k]).filter(Boolean))];{const s=$('#f_dis'),v=s.value;s.innerHTML='<option value="">เลือกโรค</option>'+[...new Set(['DHF','DF','DSS',...u('dis')])].map(x=>`<option>${esc(x)}`).join('');s.value=v}$('#dl_s').innerHTML=u('src').map(x=>`<option>${esc(x)}`).join('')}
+function clr(){K.forEach(k=>$('#f_'+k).value='');V.ed=null;$('#ft').textContent='บันทึกผู้ป่วยรายใหม่'}
+$('#fc').onclick=()=>{clr();msg('#fm','')};
+$('#fs').onclick=()=>{const o={};K.forEach(k=>o[k]=$('#f_'+k).value);
+ if(!o.dOn&&!o.dSeen&&!o.dRep)return msg('#fm','กรุณากรอกอย่างน้อยหนึ่งวันที่ (เริ่มป่วย / พบผู้ป่วย / รับแจ้ง)','e');
+ const r=mk(o),w=[];if(r.dOn&&r.dSeen&&r.dOn>r.dSeen)w.push('วันเริ่มป่วยหลังวันพบผู้ป่วย');if(r.dSeen&&r.dRep&&r.dSeen>r.dRep)w.push('วันพบผู้ป่วยหลังวันรับแจ้ง');if(isn(r.age)&&r.age>110)w.push('อายุผิดปกติ');
+ if(V.ed){const i=D.findIndex(x=>x._id===V.ed);r._id=V.ed;if(i>=0){r.uid=D[i].uid;D[i]=r}if(r.no==='')r.no=D[i]?.no||''}else nums([r]),D.push(r);
+ const ed=V.ed;save();sy({op:'upsert',rows:[toRow(r)]});clr();lists();msg('#fm',(ed?'แก้ไขแล้ว':'บันทึกแล้ว')+` (Datasheet มี ${D.length} รายการ)`+(w.length?`<br><span class="al">คำเตือน: ${w.join(', ')}</span>`:''),'s')};
+// ---------- datasheet ----------
+function tbl(h,rows,cls){return `<table><tr>${h.map(x=>`<th>${x}`).join('')}${rows.map((r,i)=>`<tr${cls&&cls[i]?` style="${cls[i]}"`:''}>${r.map(c=>`<td>${typeof c==='string'&&c.startsWith('<!')?c.slice(2):esc(c)}`).join('')}`).join('')}</table>`}
+function tb(){const q=$('#q').value.trim().toLowerCase(),R=D.filter(r=>!q||JSON.stringify(r).toLowerCase().includes(q));
+ $('#tc').textContent=`แสดง ${Math.min(R.length,200)} จาก ${R.length} รายการ (ทั้งหมด ${D.length})`;
+ $('#tt').innerHTML=tbl([...H,''],R.slice(0,200).map(r=>[...K.map(k=>/^d/.test(k)&&k!=='dis'?fd(r[k]):k==='age'&&isn(r[k])?f1(r[k]):r[k]),`<!<button class="pill" data-e="${r._id}">แก้ไข</button> <button class="pill" data-x="${r._id}">ลบ</button>`]))}
+$('#q').oninput=tb;
+$('#tt').onclick=e=>{const b=e.target,id=+(b.dataset.e||b.dataset.x);if(!id)return;
+ if(b.dataset.e){const r=D.find(x=>x._id===id);lists();K.forEach(k=>$('#f_'+k).value=/^d/.test(k)&&k!=='dis'?r[k]:r[k]??'');V.ed=id;$('#ft').textContent='แก้ไขรายการลำดับ '+r.no;lists();$('#nav .tab[data-t=frm]').click()}
+ else if(b.textContent==='ลบ'){b.textContent='ยืนยัน?';setTimeout(()=>b.textContent='ลบ',3000)}else{const dr=D.find(x=>x._id===id);D=D.filter(x=>x._id!==id);save();dr&&sy({op:'delete',ids:[dr.uid]});tb()}};
+$('#cl').onclick=function(){if(this.textContent!=='ยืนยันลบทั้งหมด?'){this.textContent='ยืนยันลบทั้งหมด?';setTimeout(()=>this.textContent='ลบข้อมูลทั้งหมด',3000)}else{D=[];save();sy({op:'replace',rows:[]});tb();this.textContent='ลบข้อมูลทั้งหมด'}};
+$('#qc').onclick=()=>{const o=[],c=D.length,miss=K.slice(1).map((k,i)=>[H[i+1],D.filter(r=>r[k]===''||r[k]==null).length]).filter(x=>x[1]);
+ const bad=(f,t)=>{const n=D.filter(f).length;n&&o.push(`${t}: ${n} รายการ`)};
+ bad(r=>r.dOn&&r.dSeen&&r.dOn>r.dSeen,'วันเริ่มป่วยหลังวันพบผู้ป่วย');bad(r=>r.dOn&&r.dRep&&r.dOn>r.dRep,'วันเริ่มป่วยหลังวันรับแจ้ง');bad(r=>isn(r.age)&&(r.age<0||r.age>110),'อายุผิดปกติ');bad(r=>dtf(r)>new Date().toISOString().slice(0,10),'วันที่ในอนาคต');
+ const s={};D.forEach(r=>s[dupK(r)]=(s[dupK(r)]||0)+1);const dp=Object.values(s).filter(x=>x>1).reduce((a,b)=>a+b-1,0);dp&&o.push(`รายการซ้ำที่น่าสงสัย: ${dp}`);
+ msg('#qm',`<b>ตรวจ ${c} รายการ</b><br>`+(miss.length?'ข้อมูลว่าง: '+miss.map(x=>`${x[0]} ${x[1]}`).join(' · ')+'<br>':'')+(o.length?o.join('<br>'):'ไม่พบความผิดปกติเชิงตรรกะ'))};
+// ---------- analysis ----------
+const col=()=>{const s=getComputedStyle(document.documentElement);return['--ac','--c3','--c2','--c4'].map(v=>s.getPropertyValue(v).trim())};
+const cv=(id,h=260)=>`<div class="cw" style="height:${h}px"><canvas id="${id}"></canvas></div>`;
+function chart(id,type,L,ds,o={}){CH[id]?.destroy();const s=getComputedStyle(document.documentElement),t=s.getPropertyValue('--mu'),g=s.getPropertyValue('--bd'),C=col();
+ ds.forEach((d,i)=>{d.backgroundColor??=type==='doughnut'?C:C[i%4];d.borderColor??=type==='doughnut'?'transparent':C[i%4]});
+ CH[id]=new Chart($('#'+id),{type,data:{labels:L,datasets:ds},options:{responsive:true,maintainAspectRatio:false,indexAxis:o.ix||'x',plugins:{legend:{display:ds.length>1||type==='doughnut',labels:{color:t}}},scales:type==='doughnut'?{}:{x:{stacked:!!o.st,ticks:{color:t,maxTicksLimit:o.mt||16},grid:{display:false}},y:{stacked:!!o.st,beginAtZero:true,ticks:{color:t,precision:0},grid:{color:g}}}}})}
+function fill(){const ys=[...new Set(D.map(r=>r.yr).filter(Boolean))].sort((a,b)=>b-a),ds=[...new Set(D.map(r=>r.dis).filter(Boolean))].sort(),y=$('#fy').value,d=$('#fd').value;
+ $('#fy').innerHTML='<option value="">ทุกปี</option>'+ys.map(x=>`<option>${x}`).join('');$('#fd').innerHTML='<option value="">ทุกโรค</option>'+ds.map(x=>`<option>${esc(x)}`).join('');$('#fy').value=y;$('#fd').value=d}
+$('#fy').onchange=$('#fd').onchange=an;$('#pop').oninput=()=>{try{localStorage.setItem('dhfpop',$('#pop').value)}catch(e){}an()};
+const filt=()=>D.filter(r=>(!$('#fy').value||r.yr==$('#fy').value)&&(!$('#fd').value||r.dis===$('#fd').value));
+const cmap=a=>{const m={};a.forEach(x=>m[x]=(m[x]||0)+1);return Object.entries(m).sort((a,b)=>b[1]-a[1])};
+const hist=(a,mx)=>Array.from({length:mx+1},(_,i)=>a.filter(x=>i===mx?x>=i:x===i).length);
+const wk1=y=>{const j=new Date(Date.UTC(y,0,1)),w=j.getUTCDay();return new Date(+j+(w<=3?-w:7-w)*864e5)};
+function ew(d){let y=d.getUTCFullYear();if(d>=wk1(y+1))y++;else if(d<wk1(y))y--;return[y,Math.floor((d-wk1(y))/6048e5)+1]}
+function bk(s,g){if(g==='day')return s;if(g==='month')return s.slice(0,7);const[y,w]=ew(new Date(s+'T00:00:00Z'));return y+'-W'+String(w).padStart(2,'0')}
+const lb=k=>k.length===10?fd(k):(+k.slice(0,4)+543)+k.slice(4);
+function ser(R,f,g){const ds=R.map(r=>r[f]).filter(Boolean).sort();if(!ds.length)return{L:[],C:[]};const c={},L=[];
+ for(let t=Date.parse(ds[0]),e=Date.parse(ds.at(-1));t<=e;t+=864e5){const k=bk(new Date(t).toISOString().slice(0,10),g);if(!(k in c)){c[k]=0;L.push(k)}}
+ ds.forEach(d=>c[bk(d,g)]++);return{L,C:L.map(k=>c[k])}}
+const ma=(C,w)=>C.map((_,i)=>mean(C.slice(Math.max(0,i-w+1),i+1)));
+const kp=a=>`<div class="kp">${a.map(x=>`<div><b>${x[1]}</b><span>${x[0]}</span></div>`).join('')}</div>`;
+function an(){fill();const R=filt();if(!D.length){$('#anb').innerHTML='<div class="card">ยังไม่มีข้อมูล กรุณานำเข้าไฟล์หรือบันทึกข้อมูลก่อน</div>';return}
+ Object.values(CH).forEach(c=>c.destroy());CH={};({ov,pe,ti,pl,su})[V.t](R)}
+function ov(R){const n=R.length,pop=+$('#pop').value,A=R.map(r=>r.age).filter(isn),m=R.filter(r=>r.sex==='ชาย').length,w=R.filter(r=>r.sex==='หญิง').length,
+ d1=R.map(r=>days(r.dOn,r.dSeen)).filter(x=>isn(x)&&x>=0),d2=R.map(r=>days(r.dOn,r.dRep)).filter(x=>isn(x)&&x>=0);
+ const pr=(a,t)=>[...cmap(a)].map(x=>[x[0]||'(ไม่ระบุ)',x[1],f1(x[1]/n*100)+'%']);
+ $('#anb').innerHTML=kp([['ผู้ป่วยทั้งหมด (ราย)',n],['อัตราป่วย ต่อแสนประชากร',pop?f1(n/pop*1e5):'ใส่ประชากร'],['ชาย : หญิง',`${m} : ${w}`+(w?` (${f1(m/w)}:1)`:'')],['อายุมัธยฐาน (ปี)',f1(pct(A,.5))],['อายุต่ำสุด–สูงสุด',rng(A)],['เริ่มป่วย→พบผู้ป่วย (วัน, มัธยฐาน)',f1(pct(d1,.5))],['เริ่มป่วย→รับแจ้ง (วัน, มัธยฐาน)',f1(pct(d2,.5))],['พบผู้ป่วยทันที (≤1 วัน)',d1.length?f1(d1.filter(x=>x<=1).length/d1.length*100)+'%':'–']])+
+ `<div class="two"><div class="card"><h3>ตามชื่อโรค</h3>${tbl(['โรค','ราย','%'],pr(R.map(r=>r.dis)))}</div><div class="card"><h3>ตามแหล่งรายงาน</h3>${tbl(['แหล่ง','ราย','%'],pr(R.map(r=>r.src)))}</div></div>
+ <div class="card"><h3>ความล่าช้าในระบบเฝ้าระวัง (วัน)</h3>${cv('c1')}<p class="mu">ใช้ประเมินความทันเวลาของการรายงาน: ยิ่งช้า ยิ่งเสี่ยงต่อการควบคุมโรคไม่ทัน</p></div>`;
+ chart('c1','bar',['0','1','2','3','4','5','6','7+'],[{label:'เริ่มป่วย→พบผู้ป่วย',data:hist(d1,7)},{label:'เริ่มป่วย→รับแจ้ง',data:hist(d2,7)}])}
+function pe(R){const G=[[0,5,'0-4'],[5,10,'5-9'],[10,15,'10-14'],[15,25,'15-24'],[25,35,'25-34'],[35,45,'35-44'],[45,60,'45-59'],[60,999,'≥60']],
+ g=(s)=>G.map(([a,b])=>R.filter(r=>isn(r.age)&&r.age>=a&&r.age<b&&(!s||r.sex===s)).length),T=g(),M=g('ชาย'),F=g('หญิง'),tot=T.reduce((a,b)=>a+b,0),A=R.map(r=>r.age).filter(isn);
+ $('#anb').innerHTML=`<div class="two"><div class="card"><h3>กลุ่มอายุและเพศ</h3>${cv('c1')}</div><div class="card"><h3>สัดส่วนเพศ</h3>${cv('c2')}</div></div>
+ <div class="card"><h3>ตารางกลุ่มอายุ</h3>${tbl(['กลุ่มอายุ (ปี)','ชาย','หญิง','รวม','ร้อยละ','สะสม %'],G.map((x,i)=>[x[2],M[i],F[i],T[i],f1(T[i]/tot*100),f1(T.slice(0,i+1).reduce((a,b)=>a+b,0)/tot*100)]))}
+ <p class="mu">ไม่ทราบอายุ ${R.length-A.length} ราย · เฉลี่ย ${f1(mean(A))} ปี · SD ${f1(sd(A))} · IQR ${f1(pct(A,.25))}–${f1(pct(A,.75))} · มัธยฐาน ${f1(pct(A,.5))}</p></div>`;
+ chart('c1','bar',G.map(x=>x[2]),[{label:'ชาย',data:M},{label:'หญิง',data:F}],{st:1});
+ chart('c2','doughnut',['ชาย','หญิง','ไม่ระบุ'],[{data:[R.filter(r=>r.sex==='ชาย').length,R.filter(r=>r.sex==='หญิง').length,R.filter(r=>!r.sex).length]}])}
+function ti(R){const B=V.b,N={day:'รายวัน',week:'สัปดาห์ระบาดวิทยา',month:'รายเดือน'};
+ $('#anb').innerHTML=`<div class="card"><div class="row"><label>แสดงผล<select id="vg">${Object.entries(N).map(([k,v])=>`<option value="${k}"${V.g===k?' selected':''}>${v}</option>`).join('')}</select></label><label>อิงวันที่<select id="vb"><option value="dOn"${B==='dOn'?' selected':''}>วันเริ่มป่วย</option><option value="dSeen"${B==='dSeen'?' selected':''}>วันพบผู้ป่วย</option><option value="dRep"${B==='dRep'?' selected':''}>วันรับแจ้ง</option></select></label></div>
+ <h3 style="margin-top:14px">Epidemic curve</h3>${cv('c1',300)}<p class="mu">เส้น = ค่าเฉลี่ยเคลื่อนที่ ${V.g==='day'?7:3} ช่วง · สัปดาห์ระบาดวิทยาแบบ MMWR (เริ่มวันอาทิตย์)</p></div>
+ <div class="two"><div class="card"><h3>วันในสัปดาห์</h3>${cv('c2',220)}</div><div class="card"><h3>ชั่วโมงที่รับแจ้ง</h3>${cv('c3',220)}</div></div><div class="card"><h3>จำนวนผู้ป่วยรายเดือน × ปี</h3><div class="sc" id="hm"></div></div>`;
+ $('#vg').onchange=e=>{V.g=e.target.value;an()};$('#vb').onchange=e=>{V.b=e.target.value;an()};
+ const s=ser(R,B,V.g);chart('c1','bar',s.L.map(lb),[{label:'ผู้ป่วย',data:s.C},{type:'line',label:'ค่าเฉลี่ยเคลื่อนที่',data:ma(s.C,V.g==='day'?7:3),pointRadius:0,borderColor:col()[1],backgroundColor:'transparent'}],{mt:V.g==='day'?10:20});
+ const ds=R.map(r=>r[B]).filter(Boolean);chart('c2','bar',['อา','จ','อ','พ','พฤ','ศ','ส'],[{label:'ผู้ป่วย',data:[0,1,2,3,4,5,6].map(i=>ds.filter(d=>new Date(d+'T00:00:00Z').getUTCDay()===i).length)}]);
+ chart('c3','bar',[...Array(24).keys()].map(String),[{label:'รับแจ้ง',data:[...Array(24).keys()].map(h=>R.filter(r=>r.tRep&&+r.tRep.slice(0,2)===h).length)}],{mt:12});
+ const Y=[...new Set(ds.map(d=>d.slice(0,4)))].sort(),c={};ds.forEach(d=>c[d.slice(0,4)+d.slice(5,7)]=(c[d.slice(0,4)+d.slice(5,7)]||0)+1);const mx=Math.max(1,...Object.values(c));
+ $('#hm').innerHTML=tbl(['ปี พ.ศ.','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.','รวม'],Y.map(y=>{const r=[...Array(12)].map((_,i)=>c[y+String(i+1).padStart(2,'0')]||0);return[+y+543,...r.map(v=>`<!<span style="display:block;padding:1px 6px;border-radius:4px;background:color-mix(in srgb,var(--ac) ${Math.round(v/mx*80)}%,transparent)">${v}</span>`),r.reduce((a,b)=>a+b,0)]}))}
+function ak(r,m){const a=r.addr||'',t=(a.match(/(?:ต\.|ตำบล)\s*([^\s,]+)/)||[])[1],v=(a.match(/(?:หมู่ที่|หมู่|ม\.)\s*(\d+)/)||[])[1];
+ return m==='t'?(t?'ต.'+t:'(ไม่ระบุตำบล)'):m==='v'?(t||v?[t&&'ต.'+t,v&&'ม.'+v].filter(Boolean).join(' '):'(ไม่ระบุหมู่บ้าน)'):(a||'(ไม่ระบุ)')}
+function pl(R){const A=V.a,n=R.length,G={};R.forEach(r=>(G[ak(r,A)]??=[]).push(r));const E=Object.entries(G).sort((a,b)=>b[1].length-a[1].length),un=E.filter(e=>e[0].startsWith('(ไม่ระบุ')).reduce((s,e)=>s+e[1].length,0);
+ const cl=[];Object.entries(R.reduce((o,r)=>{const k=ak(r,'v');if(!k.startsWith('(')&&dtf(r))(o[k]??=[]).push(dtf(r));return o},{})).forEach(([k,a])=>{a.sort();let c=[a[0]];[...a.slice(1),null].forEach(d=>{if(d&&days(c.at(-1),d)<=V.cd)c.push(d);else{if(c.length>1)cl.push([k,c.length,fd(c[0]),fd(c.at(-1))]);c=[d]}})});
+ $('#anb').innerHTML=`<div class="card"><div class="row"><label>จัดกลุ่มตาม<select id="va"><option value="t"${A==='t'?' selected':''}>ตำบล</option><option value="v"${A==='v'?' selected':''}>ตำบล + หมู่บ้าน</option><option value="a"${A==='a'?' selected':''}>ที่อยู่เต็ม</option></select></label></div>
+ ${un/n>.5?`<p class="al">ที่อยู่ ${f1(un/n*100)}% อ่านพื้นที่ไม่ได้ ควรระบุ "ต.…" "ม.…" ในที่อยู่ หรือเลือกจัดกลุ่มตามที่อยู่เต็ม</p>`:''}<h3>15 พื้นที่ที่มีผู้ป่วยสูงสุด</h3>${cv('c1',Math.max(200,Math.min(15,E.length)*26+40))}</div>
+ <div class="two"><div class="card"><h3>จำนวนผู้ป่วยรายพื้นที่</h3><div class="sc" style="max-height:380px">${tbl(['พื้นที่','ราย','%','เริ่มป่วยแรก','เริ่มป่วยล่าสุด'],E.slice(0,150).map(([k,a])=>{const d=a.map(dtf).filter(Boolean).sort();return[k,a.length,f1(a.length/n*100),fd(d[0]),fd(d.at(-1))]}))}</div></div>
+ <div class="card"><h3>กลุ่มก้อน (cluster) ระดับหมู่บ้าน</h3><label style="max-width:260px">ผู้ป่วยตั้งแต่ 2 รายขึ้นไปในหมู่บ้านเดียวกัน เริ่มป่วยห่างกันไม่เกิน (วัน)<input id="vc" type="number" min="1" value="${V.cd}"></label>
+ <div class="sc" style="margin-top:8px">${cl.length?tbl(['หมู่บ้าน','ราย','เริ่ม','สิ้นสุด'],cl.sort((a,b)=>b[1]-a[1])):'<p class="mu">ไม่พบกลุ่มก้อนตามเกณฑ์ (ต้องระบุ ต./ม. ในที่อยู่)</p>'}</div><p class="mu">28 วันเป็นค่าที่ใช้กันทั่วไปในงานควบคุมโรคไข้เลือดออก ปรับตามแนวทางของพื้นที่ได้</p></div></div>`;
+ $('#va').onchange=e=>{V.a=e.target.value;an()};$('#vc').onchange=e=>{V.cd=+e.target.value||28;an()};
+ const T=E.slice(0,15);chart('c1','bar',T.map(e=>e[0]),[{label:'ผู้ป่วย',data:T.map(e=>e[1].length)}],{ix:'y'})}
+function su(){const Rs=D.filter(r=>!$('#fd').value||r.dis===$('#fd').value),Ys=[...new Set(Rs.map(dtf).filter(Boolean).map(d=>+d.slice(0,4)))].sort(),Y=$('#fy').value?+$('#fy').value-543:Ys.at(-1);
+ if(!Ys.length){$('#anb').innerHTML='<div class="card">ไม่มีข้อมูลวันที่</div>';return}
+ const M={};Rs.forEach(r=>{const d=dtf(r);if(d){const y=+d.slice(0,4);(M[y]??=Array(12).fill(0))[+d.slice(5,7)-1]++}});const base=Ys.filter(y=>y<Y).slice(-5),cur=M[Y]||Array(12).fill(0);
+ const med=[...Array(12)].map((_,i)=>pct(base.map(y=>M[y][i]),.5)),q3=[...Array(12)].map((_,i)=>pct(base.map(y=>M[y][i]),.75)),mn=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+ const W=ser(Rs,'dOn','week'),wr=[];W.L.forEach((k,i)=>{if(+k.slice(0,4)!==Y||i<5)return;const b=W.C.slice(i-5,i),th=mean(b)+2*sd(b);wr.push([lb(k),W.C[i],f1(W.C[i-1]?(W.C[i]-W.C[i-1])/W.C[i-1]*100:null)+'%',f1(th),W.C[i]>th&&W.C[i]>=2?'<!<span class="al">เกินเกณฑ์</span>':'ปกติ'])});
+ $('#anb').innerHTML=`<div class="card"><h3>Endemic channel รายเดือน – ปี พ.ศ. ${Y+543}</h3>${base.length<3?`<p class="al">มีปีย้อนหลังเพียง ${base.length} ปี (แนะนำอย่างน้อย 5 ปี) เกณฑ์อาจไม่เสถียร</p>`:''}${base.length?cv('c1',300):'<p class="mu">ไม่มีข้อมูลปีก่อนหน้าสำหรับสร้างเกณฑ์</p>'}
+ <p class="mu">เกณฑ์ = มัธยฐานและเปอร์เซ็นไทล์ที่ 75 ของจำนวนผู้ป่วยรายเดือนในปีย้อนหลังสูงสุด 5 ปี (${base.map(y=>y+543).join(', ')||'–'}) · กรณีมีปีระบาดใหญ่ ควรพิจารณาตัดออกก่อนใช้เกณฑ์</p>
+ <div class="sc">${tbl(['เดือน','ปีนี้','มัธยฐาน','P75','สถานะ'],cur.map((v,i)=>[mn[i],v,f1(med[i]),f1(q3[i]),base.length?(v>q3[i]?'<!<span class="al">สูงกว่า P75 (เฝ้าระวัง)</span>':v>med[i]?'สูงกว่ามัธยฐาน':'ปกติ'):'–']))}</div></div>
+ <div class="card"><h3>ตรวจจับสัปดาห์ผิดปกติ (ค่าเฉลี่ย 5 สัปดาห์ก่อนหน้า + 2 SD)</h3><div class="sc" style="max-height:340px">${wr.length?tbl(['สัปดาห์','ผู้ป่วย','เปลี่ยนแปลงจากสัปดาห์ก่อน','เกณฑ์','สถานะ'],wr):'<p class="mu">ข้อมูลไม่พอ (ต้องมีมากกว่า 5 สัปดาห์)</p>'}</div></div>
+ <div class="card"><h3>เปรียบเทียบรายปี</h3>${cv('c2',240)}</div>`;
+ if(base.length)chart('c1','bar',mn,[{label:'ปี '+(Y+543),data:cur},{type:'line',label:'มัธยฐาน',data:med,borderDash:[5,4],pointRadius:2,backgroundColor:'transparent',borderColor:col()[1]},{type:'line',label:'P75',data:q3,pointRadius:2,backgroundColor:'transparent',borderColor:col()[3]}]);
+ chart('c2','bar',Ys.map(y=>y+543),[{label:'ผู้ป่วย',data:Ys.map(y=>M[y].reduce((a,b)=>a+b,0))}])}
+// ---------- spot map ----------
+let MP=null,LY=null,PL=null,HC={name:'',lat:'',lng:''};try{HC=Object.assign(HC,JSON.parse(localStorage.getItem('dhfhc')||'{}'))}catch(e){}
+const hasG=r=>isn(r.lat)&&isn(r.lng);
+function fillM(){const ys=[...new Set(D.map(r=>r.yr).filter(Boolean))].sort((a,b)=>b-a),ds=[...new Set(D.map(r=>r.dis).filter(Boolean))].sort(),y=$('#my').value,d=$('#md').value;
+ $('#my').innerHTML='<option value="">ทุกปี</option>'+ys.map(x=>`<option>${x}`).join('');$('#md').innerHTML='<option value="">ทุกโรค</option>'+ds.map(x=>`<option>${esc(x)}`).join('');$('#my').value=y;$('#md').value=d}
+const mrows=()=>D.filter(r=>(!$('#my').value||r.yr==$('#my').value)&&(!$('#md').value||r.dis===$('#md').value));
+function mp(){fillM();if(!window.L)return msg('#mm','โหลดไลบรารีแผนที่ไม่สำเร็จ','e');
+ if(!MP){MP=L.map('mapc',{center:[13,101.5],zoom:6});L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(MP);L.control.scale({imperial:false}).addTo(MP);LY=L.layerGroup().addTo(MP);PL=L.layerGroup().addTo(MP);MP.on('click',e=>pick(e.latlng))}
+ setTimeout(()=>{MP.invalidateSize();drawM(true)},60)}
+function drawM(fit){if(!MP)return;LY.clearLayers();const R=mrows(),G=R.filter(hasG),rad=Math.max(1,+$('#mr').value||100),pts=[],hf=isn(HC.lat)&&isn(HC.lng);
+ G.forEach(r=>{const p=[r.lat,r.lng];pts.push(p);L.circle(p,{radius:rad,color:'#dc2626',weight:1,opacity:.45,fillColor:'#dc2626',fillOpacity:.15,interactive:false}).addTo(LY);
+  L.circleMarker(p,{radius:4,color:'#991b1b',weight:1,fillColor:'#dc2626',fillOpacity:1}).bindPopup(`<b>${esc(r.name||'(ไม่ระบุชื่อ)')}</b><br>${esc(r.dis)} · ${esc(r.age)} ปี · ${esc(r.sex)}<br>เริ่มป่วย ${fd(r.dOn)||'–'}<br>${esc(r.addr)}${hf?`<br>ห่างจาก รพ.สต. ${f1(MP.distance([HC.lat,HC.lng],p)/1000)} กม.`:''}`).addTo(LY)});
+ if(hf)L.marker([HC.lat,HC.lng],{icon:L.divIcon({className:'hc',html:RC,iconSize:[30,30],iconAnchor:[15,15]}),zIndexOffset:1000}).bindPopup('<b>'+esc(HC.name||'รพ.สต.')+'</b><br>ศูนย์กลางการเฝ้าระวัง').addTo(LY);
+ $('#mi').textContent=`แสดง ${G.length} จุด (ผู้ป่วยตามตัวกรอง ${R.length} ราย, ไม่มีพิกัด ${R.length-G.length} ราย)`;
+ if(fit){if(hf){const hp=[HC.lat,HC.lng],md=Math.max(300,...G.map(r=>MP.distance(hp,[r.lat,r.lng])));MP.fitBounds(L.latLng(hp).toBounds(md*2.2),{maxZoom:17})}else if(pts.length)MP.fitBounds(L.latLngBounds(pts).pad(.2),{maxZoom:17})}}
+function pick(ll){PL.clearLayers();const rad=Math.max(1,+$('#mr').value||100);L.circle(ll,{radius:rad,color:'#2563eb',weight:1,dashArray:'4',fillColor:'#2563eb',fillOpacity:.1,interactive:false}).addTo(PL);L.circleMarker(ll,{radius:5,color:'#1d4ed8',fillColor:'#3b82f6',fillOpacity:1,interactive:false}).addTo(PL);
+ const o=D.filter(r=>!hasG(r)).slice(0,300).map(r=>`<option value="${r._id}">${esc(r.no)} · ${esc(r.name||'-')} · ${esc((r.addr||'').slice(0,28))}</option>`).join('');
+ $('#pk').innerHTML=`<div class="m"><b>จุดที่มาร์ค:</b> ${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}<div class="row" style="margin-top:8px"><button class="btn" id="pf">นำไปกรอกในฟอร์มบันทึกข้อมูล</button><button class="btn g" id="ph">ตั้งเป็นที่ตั้ง รพ.สต.</button>${o?`<label>หรือกำหนดให้ผู้ป่วยที่ยังไม่มีพิกัด<select id="ps">${o}</select></label><button class="btn g" id="pa">บันทึกพิกัดให้รายนี้</button>`:''}</div></div>`;
+ $('#pf').onclick=()=>{$('#f_lat').value=ll.lat.toFixed(6);$('#f_lng').value=ll.lng.toFixed(6);$('#nav .tab[data-t=frm]').click()};
+ $('#ph').onclick=()=>{setHC($('#hn').value,ll.lat,ll.lng);PL.clearLayers();$('#pk').innerHTML='';drawM(true)};
+ const pa=$('#pa');if(pa)pa.onclick=()=>{const r=D.find(x=>x._id===+$('#ps').value);if(!r)return;r.lat=+ll.lat.toFixed(6);r.lng=+ll.lng.toFixed(6);save();PL.clearLayers();$('#pk').innerHTML='';drawM(false);msg('#mm',`บันทึกพิกัดให้ลำดับ ${esc(r.no)} แล้ว`,'s')}}
+const RC='<svg viewBox="0 0 30 30" width="30" height="30"><rect x="1" y="1" width="28" height="28" rx="4" fill="#fff" stroke="#dc2626" stroke-width="1.5"/><path d="M11.5 5h7v6.5H25v7h-6.5V25h-7v-6.5H5v-7h6.5z" fill="#dc2626"/></svg>';
+function setHC(n,la,ln){const g=gp(la,ln);HC={name:String(n||'').trim(),lat:g.lat,lng:g.lng};try{localStorage.setItem('dhfhc',JSON.stringify(HC))}catch(e){}$('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng}
+$('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng;
+$('#hs').onclick=()=>{setHC($('#hn').value,$('#hy').value,$('#hx').value);drawM(true)};
+$('#hd').onclick=()=>{setHC('','','');drawM(true)};
+$('#my').onchange=$('#md').onchange=()=>drawM(true);$('#mr').oninput=()=>drawM(false);$('#fp').onclick=()=>$('#nav .tab[data-t=map]').click();
+async function sv(n,t){const c=window.claude&&await claude.use('downloads');if(!c)return msg('#mm','ฟังก์ชันดาวน์โหลดไม่พร้อมใช้งานในมุมมองนี้','e');try{await c.save({filename:n,data:new Blob([t])})}catch(e){if(e.code!=='declined')msg('#mm','บันทึกไฟล์ไม่สำเร็จ ('+esc(e.code||e.message)+')','e')}}
+const gl=()=>mrows().filter(hasG);
+$('#mc').onclick=()=>{const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';sv('DHF_spotmap.csv','\ufeff'+['ละติจูด,ลองจิจูด,ชื่อ,โรค,อายุ,เพศ,วันเริ่มป่วย,ที่อยู่',...gl().map(r=>[r.lat,r.lng,q(r.name),q(r.dis),r.age,r.sex,fd(r.dOn),q(r.addr)].join(','))].join('\n'))};
+$('#mg').onclick=()=>sv('DHF_spotmap.json',JSON.stringify({type:'FeatureCollection',features:gl().map(r=>({type:'Feature',geometry:{type:'Point',coordinates:[r.lng,r.lat]},properties:{name:r.name,disease:r.dis,age:r.age,sex:r.sex,onset:r.dOn,address:r.addr}}))}));
+// ---------- Google Sheets sync ----------
+let SY={url:'',tok:'',auto:false};try{SY=Object.assign(SY,JSON.parse(localStorage.getItem('dhfsync')||'{}'))}catch(e){}
+const toRow=r=>[r.no,r.name,r.sex,r.age,r.addr,fd(r.dRep),r.tRep,fd(r.dOn),fd(r.dSeen),r.dis,r.src,r.yr,r.lat,r.lng,r.uid];
+async function gs(b){if(!SY.url)throw new Error('ยังไม่ได้ตั้งค่า URL');const r=await fetch(SY.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:SY.tok,...b})}),j=await r.json();if(!j.ok)throw new Error(j.error||'ผิดพลาด');return j}
+async function pull(){if(!SY.url)throw new Error('ยังไม่ได้ตั้งค่า URL');const r=await fetch(SY.url+(SY.url.includes('?')?'&':'?')+'token='+encodeURIComponent(SY.tok)),j=await r.json();if(!j.ok)throw new Error(j.error||'ผิดพลาด');
+ D=j.rows.map(a=>{const o={};K.forEach((k,i)=>o[k]=a[i]);o.uid=a[14]||undefined;return mk(o)});save()}
+const st=(t,e)=>msg('#sm',t,e?'e':'s');
+async function sy(b){if(!SY.auto||!SY.url)return;try{await gs(b);st('ซิงก์ไป Google Sheet แล้ว '+new Date().toLocaleTimeString('th-TH'))}catch(e){st('ซิงก์ไม่สำเร็จ: '+esc(e.message),1)}}
+function cfg(){SY={url:$('#sU').value.trim(),tok:$('#sT').value.trim(),auto:$('#sA').checked};try{localStorage.setItem('dhfsync',JSON.stringify(SY))}catch(e){}}
+$('#sU').value=SY.url;$('#sT').value=SY.tok;$('#sA').checked=SY.auto;['sU','sT','sA'].forEach(i=>$('#'+i).onchange=cfg);
+$('#sD').onclick=async()=>{cfg();try{st('กำลังดึงข้อมูล...');await pull();st(`ดึงข้อมูลแล้ว ${D.length} รายการ`);tb()}catch(e){st('ไม่สำเร็จ: '+esc(e.message),1)}};
+$('#sP').onclick=async()=>{cfg();try{st('กำลังส่งข้อมูล...');await gs({op:'replace',rows:D.map(toRow)});st(`ส่งขึ้น Sheet แล้ว ${D.length} รายการ (แทนที่ข้อมูลใน Sheet)`)}catch(e){st('ไม่สำเร็จ: '+esc(e.message),1)}};
+lists();an();
+if(SY.auto&&SY.url)pull().then(()=>{lists();an();tb()}).catch(e=>st('ดึงข้อมูลตอนเปิดแอพไม่สำเร็จ: '+esc(e.message),1));
+</script></body></html>
