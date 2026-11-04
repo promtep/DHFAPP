@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="th"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DHF Epi Analyzer + Google Sheets</title>
+<title>ระบบเฝ้าระวังและควบคุมโรคไข้เลือดออก</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -31,14 +31,16 @@ label{display:block;font-size:13px;color:var(--mu)}input,select,textarea{width:1
 .dz{border:2px dashed var(--bd);border-radius:12px;padding:28px;text-align:center;cursor:pointer;color:var(--mu)}.dz.o{border-color:var(--ac)}
 .hide{display:none}.al{color:var(--bad);font-weight:600}
 .hc{background:none;border:0}
+.hd{display:flex;gap:14px;align-items:center}.logo{width:58px;height:58px;border-radius:50%;overflow:hidden;background:#fff;border:2px solid var(--bd);flex:0 0 auto}.logo img,.logo svg{width:100%;height:100%;object-fit:cover;display:block}#lgp{width:100px;height:100px}
+header p{font-size:13px}footer{max-width:1200px;margin:auto;padding:6px 16px 28px;color:var(--mu);font-size:12px;text-align:center}
 #mapc{height:560px;border-radius:12px;border:1px solid var(--bd);margin-top:10px}
 .leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-layer{position:absolute;left:0;top:0}.leaflet-container{overflow:hidden;background:#e5e7eb;font:inherit;touch-action:none}.leaflet-container .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}.leaflet-container .leaflet-tile{max-width:none!important}.leaflet-tile{visibility:hidden;user-select:none}.leaflet-tile-loaded{visibility:inherit}.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-marker-pane{z-index:600}.leaflet-popup-pane{z-index:700}.leaflet-map-pane svg{z-index:200}.leaflet-zoom-animated{transform-origin:0 0}.leaflet-zoom-anim .leaflet-zoom-animated{transition:transform .25s cubic-bezier(0,0,.25,1)}.leaflet-pane>svg *{pointer-events:none}.leaflet-pane>svg path.leaflet-interactive{pointer-events:auto;cursor:pointer}.leaflet-grab{cursor:grab}.leaflet-dragging .leaflet-grab{cursor:move}.leaflet-crosshair,.leaflet-crosshair .leaflet-interactive{cursor:crosshair}
 .leaflet-control{position:relative;z-index:800;pointer-events:auto;float:left;clear:both}.leaflet-right .leaflet-control{float:right}.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}.leaflet-right{right:0}.leaflet-top .leaflet-control{margin-top:10px}.leaflet-left .leaflet-control{margin-left:10px}.leaflet-bottom .leaflet-control{margin-bottom:10px}.leaflet-right .leaflet-control{margin-right:10px}.leaflet-bar{box-shadow:0 1px 5px rgba(0,0,0,.4);border-radius:4px}.leaflet-bar a{display:block;width:30px;height:30px;line-height:30px;text-align:center;text-decoration:none;background:#fff;color:#000;border-bottom:1px solid #ccc;font:bold 18px monospace}.leaflet-bar a:last-child{border:0}.leaflet-control-scale-line{border:2px solid #777;border-top:none;padding:1px 5px;background:rgba(255,255,255,.8);color:#333;font-size:11px}.leaflet-control-attribution{background:rgba(255,255,255,.8);font-size:11px;padding:0 5px;color:#333}.leaflet-control-attribution a{color:#06c}
 .leaflet-popup{position:absolute;text-align:center}.leaflet-popup-content-wrapper{padding:1px;text-align:left;border-radius:10px;background:#fff;color:#222;box-shadow:0 3px 14px rgba(0,0,0,.4)}.leaflet-popup-content{margin:12px 22px 12px 16px;line-height:1.35;font-size:13px}.leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-left:-20px;overflow:hidden;pointer-events:none}.leaflet-popup-tip{width:16px;height:16px;margin:-9px auto 0;transform:rotate(45deg);background:#fff}.leaflet-popup-close-button{position:absolute;top:0;right:0;padding:3px 8px;color:#757575;text-decoration:none;font-size:18px}
 </style></head><body>
-<header><h1>🦟 ระบบเฝ้าระวังโรคไข้เลือดออก</h1><p>โรงพยาบาลส่งเสริมสุขภาพตำบล By Pimpacharakul, ADM</p></header>
+<header><div class="hd"><div class="logo" id="lg"></div><div><h1>ระบบเฝ้าระวังและควบคุมโรคไข้เลือดออก</h1><p id="hu"></p></div></div></header>
 <main>
-<nav id="nav"><button class="tab on" data-t="ana">วิเคราะห์</button><button class="tab" data-t="map">แผนที่ (Spot map)</button><button class="tab" data-t="imp">นำเข้าไฟล์</button><button class="tab" data-t="frm">บันทึกข้อมูล</button><button class="tab" data-t="tbl">ตารางข้อมูล (Datasheet)</button></nav>
+<nav id="nav"><button class="tab on" data-t="ana">วิเคราะห์</button><button class="tab" data-t="map">แผนที่ (Spot map)</button><button class="tab" data-t="imp">นำเข้าไฟล์</button><button class="tab" data-t="frm">บันทึกข้อมูล</button><button class="tab" data-t="tbl">ตารางข้อมูล (Datasheet)</button><button class="tab" data-t="set">ตั้งค่า</button></nav>
 
 <section id="imp" class="hide">
 <div class="card"><h3>นำเข้าไฟล์ Excel / CSV</h3>
@@ -51,21 +53,31 @@ label{display:block;font-size:13px;color:var(--mu)}input,select,textarea{width:1
 <div class="grid" id="ff"></div>
 <div class="row" style="margin-top:14px"><button class="btn" id="fs">บันทึก</button><button class="btn g" id="fc">ล้างฟอร์ม</button><button class="btn g" id="fp">เลือกพิกัดจากแผนที่</button></div><div id="fm"></div></div></section>
 
-<section id="tbl" class="hide"><div class="card"><h3>เชื่อมต่อ Google Sheets</h3>
-<div class="grid"><label>Web App URL (Apps Script, ลงท้าย /exec)<input id="sU" placeholder="https://script.google.com/macros/s/.../exec"></label><label>รหัสผ่าน (TOKEN ที่ตั้งใน Code.gs)<input id="sT" type="password"></label></div>
-<div class="row" style="margin-top:10px"><label style="display:flex;gap:8px;align-items:center;flex:0 0 auto"><input id="sA" type="checkbox" style="width:auto;margin:0">ซิงก์อัตโนมัติ (ดึงตอนเปิดแอพ + ส่งทุกครั้งที่บันทึก/ลบ/นำเข้า)</label><button class="btn g" id="sD">ดึงข้อมูลจาก Sheet</button><button class="btn g" id="sP">ส่งข้อมูลทั้งหมดขึ้น Sheet</button></div><div id="sm"></div></div><div class="card">
+<section id="tbl" class="hide"><div class="card">
 <div class="row"><label>ค้นหา<input id="q" placeholder="ชื่อ ที่อยู่ โรค ฯลฯ"></label><button class="btn g" id="qc">ตรวจคุณภาพข้อมูล</button><button class="btn" id="ex">ส่งออก Excel</button><button class="btn g" id="cl">ลบข้อมูลทั้งหมด</button></div>
 <div id="qm"></div><p class="mu" id="tc"></p><div class="sc" id="tt"></div></div></section>
 
+<section id="set" class="hide">
+<div class="card"><h3>ข้อมูลหน่วยบริการ (แสดงที่หัวหน้าแรก)</h3>
+<div class="row"><div style="flex:0 0 auto"><div class="logo" id="lgp"></div></div><div style="flex:1 1 260px"><label>โลโก้ (ครอปเป็นวงกลมอัตโนมัติ)<input type="file" id="lgf" accept="image/*"></label><button class="btn g" id="lgd" style="margin-top:8px">ใช้โลโก้เริ่มต้น</button></div></div>
+<div class="grid" style="margin-top:12px"><label>ชื่อหน่วยบริการ<input id="hn" placeholder="เช่น รพ.สต.บ้านตัวอย่าง"></label><label>ตำบล<input id="uT"></label><label>อำเภอ<input id="uA"></label><label>จังหวัด<input id="uP"></label></div>
+<h3 style="margin-top:16px">พิกัดศูนย์ควบคุมโรค (ศูนย์กลางของ Spot map)</h3>
+<div class="grid"><label>ละติจูด<input id="hy" placeholder="เช่น 14.0123"></label><label>ลองจิจูด<input id="hx" placeholder="เช่น 100.5123"></label></div>
+<div class="row" style="margin-top:12px"><button class="btn" id="hs">บันทึกการตั้งค่า</button><button class="btn g" id="hd">ลบพิกัด</button></div><div id="stm"></div>
+<p class="mu">ตั้งพิกัดได้ด้วยการคลิกบนแผนที่ในแท็บ Spot map แล้วกด "ตั้งเป็นที่ตั้งหน่วยบริการ"</p></div>
+<div class="card"><h3>เชื่อมต่อ Google Sheets</h3>
+<div class="grid"><label>Web App URL (Apps Script, ลงท้าย /exec)<input id="sU" placeholder="https://script.google.com/macros/s/.../exec"></label><label>รหัสผ่าน (TOKEN ที่ตั้งใน Code.gs)<input id="sT" type="password"></label></div>
+<div class="row" style="margin-top:10px"><label style="display:flex;gap:8px;align-items:center;flex:0 0 auto"><input id="sA" type="checkbox" style="width:auto;margin:0">ซิงก์อัตโนมัติ (ดึงตอนเปิดแอพ + ส่งทุกครั้งที่บันทึก/ลบ/นำเข้า)</label><button class="btn g" id="sD">ดึงข้อมูลจาก Sheet</button><button class="btn g" id="sP">ส่งข้อมูลทั้งหมดขึ้น Sheet</button></div><div id="sm"></div></div>
+</section>
 <section id="map" class="hide"><div class="card"><div class="row"><label>ปี (พ.ศ.)<select id="my"></select></label><label>ชื่อโรค<select id="md"></select></label><label>รัศมีวงกลม (เมตร)<input id="mr" type="number" min="1" value="100"></label><button class="btn g" id="mc">ส่งออก CSV (Google My Maps)</button><button class="btn g" id="mg">ส่งออก GeoJSON</button></div>
-<div class="row" style="margin-top:10px"><label>ชื่อ รพ.สต. (ศูนย์กลาง)<input id="hn" placeholder="เช่น รพ.สต.บ้าน..."></label><label>ละติจูด<input id="hy"></label><label>ลองจิจูด<input id="hx"></label><button class="btn g" id="hs">บันทึกที่ตั้ง</button><button class="btn g" id="hd">ลบที่ตั้ง</button></div>
 <p class="mu" id="mi"></p><div id="mapc"></div><div id="pk"></div><div id="mm"></div>
-<p class="mu">วิธีบันทึกพิกัด: คลิกบนแผนที่เพื่อมาร์คจุด แล้วเลือก "นำไปกรอกในฟอร์ม" หรือกำหนดให้ผู้ป่วยที่ยังไม่มีพิกัด · หรือพิมพ์ละติจูด/ลองจิจูดในหน้าบันทึกข้อมูล · ไฟล์นำเข้าที่มีคอลัมน์พิกัดท้ายตารางจะถูกอ่านอัตโนมัติ<br>วงกลมแดงจางรัศมี 100 ม. ปรับขนาดตามมาตราส่วนแผนที่จริง จุดที่ซ้อนทับกันจะเข้มขึ้น · หมายเหตุ: หน้าเว็บที่โฮสต์นี้โหลดภาพแผนที่พื้นหลัง (Google/OpenStreetMap) ไม่ได้ จึงแสดงเฉพาะจุด วงรัศมี และสเกล ใช้ปุ่มส่งออกเพื่อเปิดต่อใน Google My Maps</p></div></section>
+<p class="mu">วิธีบันทึกพิกัด: คลิกบนแผนที่เพื่อมาร์คจุด แล้วเลือก "นำไปกรอกในฟอร์ม" หรือกำหนดให้ผู้ป่วยที่ยังไม่มีพิกัด · หรือพิมพ์ละติจูด/ลองจิจูดในหน้าบันทึกข้อมูล · ไฟล์นำเข้าที่มีคอลัมน์พิกัดท้ายตารางจะถูกอ่านอัตโนมัติ · ตั้งพิกัดหน่วยบริการ (ไอคอนกากบาทแดง) ได้ที่แท็บ "ตั้งค่า"<br>วงกลมแดงจางรัศมี 100 ม. ปรับขนาดตามมาตราส่วนแผนที่จริง จุดที่ซ้อนทับกันจะเข้มขึ้น · หมายเหตุ: หน้าเว็บที่โฮสต์นี้โหลดภาพแผนที่พื้นหลัง (Google/OpenStreetMap) ไม่ได้ จึงแสดงเฉพาะจุด วงรัศมี และสเกล ใช้ปุ่มส่งออกเพื่อเปิดต่อใน Google My Maps</p></div></section>
 <section id="ana">
 <div class="card"><div class="row"><label>ปี (พ.ศ.)<select id="fy"></select></label><label>ชื่อโรค<select id="fd"></select></label><label>ประชากร (สำหรับอัตราป่วย/แสน)<input id="pop" type="number" min="0" placeholder="เช่น 25000"></label></div></div>
 <nav id="sub"><button class="pill on" data-v="ov">ภาพรวม</button><button class="pill" data-v="pe">บุคคล</button><button class="pill" data-v="ti">เวลา</button><button class="pill" data-v="pl">สถานที่ / การกระจุกตัว</button><button class="pill" data-v="su">เฝ้าระวัง / ตรวจจับการระบาด</button></nav>
 <div id="anb"></div></section>
 </main>
+<footer>ผู้จัดทำ: Promtep Pimpacharakul</footer>
 <script>
 if(!window.claude)window.claude={use:async()=>({save:async({filename,data})=>{const a=document.createElement('a');a.href=URL.createObjectURL(data);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5e3)}})};
 const K=['no','name','sex','age','addr','dRep','tRep','dOn','dSeen','dis','src','yr','lat','lng'];
@@ -101,7 +113,7 @@ function mk(o){const r={_id:++ID,uid:o.uid||('u'+Date.now().toString(36)+Math.ra
 const dupK=r=>[r.name,r.age,r.dOn,r.addr].join('|');
 function nums(rows){let n=D.reduce((m,r)=>Math.max(m,+r.no||0),0);rows.forEach(r=>{if(r.no===''||r.no==null)r.no=++n})}
 // ---------- tabs ----------
-$('#nav').onclick=e=>{const t=e.target.dataset.t;if(!t)return;$$('#nav .tab').forEach(b=>b.classList.toggle('on',b===e.target));['imp','frm','tbl','ana','map'].forEach(s=>$('#'+s).classList.toggle('hide',s!==t));if(t==='tbl')tb();if(t==='ana')an();if(t==='map')mp();if(t==='frm')lists()};
+$('#nav').onclick=e=>{const t=e.target.dataset.t;if(!t)return;$$('#nav .tab').forEach(b=>b.classList.toggle('on',b===e.target));['imp','frm','tbl','ana','map','set'].forEach(s=>$('#'+s).classList.toggle('hide',s!==t));if(t==='tbl')tb();if(t==='ana')an();if(t==='map')mp();if(t==='frm')lists()};
 $('#sub').onclick=e=>{const v=e.target.dataset.v;if(!v)return;V.t=v;$$('#sub .pill').forEach(b=>b.classList.toggle('on',b===e.target));an()};
 // ---------- import ----------
 const dz=$('#dz'),fi=$('#fi');dz.onclick=()=>fi.click();fi.onchange=()=>fi.files[0]&&rd(fi.files[0]);
@@ -243,15 +255,25 @@ function drawM(fit){if(!MP)return;LY.clearLayers();const R=mrows(),G=R.filter(ha
  if(fit){if(hf){const hp=[HC.lat,HC.lng],md=Math.max(300,...G.map(r=>MP.distance(hp,[r.lat,r.lng])));MP.fitBounds(L.latLng(hp).toBounds(md*2.2),{maxZoom:17})}else if(pts.length)MP.fitBounds(L.latLngBounds(pts).pad(.2),{maxZoom:17})}}
 function pick(ll){PL.clearLayers();const rad=Math.max(1,+$('#mr').value||100);L.circle(ll,{radius:rad,color:'#2563eb',weight:1,dashArray:'4',fillColor:'#2563eb',fillOpacity:.1,interactive:false}).addTo(PL);L.circleMarker(ll,{radius:5,color:'#1d4ed8',fillColor:'#3b82f6',fillOpacity:1,interactive:false}).addTo(PL);
  const o=D.filter(r=>!hasG(r)).slice(0,300).map(r=>`<option value="${r._id}">${esc(r.no)} · ${esc(r.name||'-')} · ${esc((r.addr||'').slice(0,28))}</option>`).join('');
- $('#pk').innerHTML=`<div class="m"><b>จุดที่มาร์ค:</b> ${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}<div class="row" style="margin-top:8px"><button class="btn" id="pf">นำไปกรอกในฟอร์มบันทึกข้อมูล</button><button class="btn g" id="ph">ตั้งเป็นที่ตั้ง รพ.สต.</button>${o?`<label>หรือกำหนดให้ผู้ป่วยที่ยังไม่มีพิกัด<select id="ps">${o}</select></label><button class="btn g" id="pa">บันทึกพิกัดให้รายนี้</button>`:''}</div></div>`;
+ $('#pk').innerHTML=`<div class="m"><b>จุดที่มาร์ค:</b> ${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}<div class="row" style="margin-top:8px"><button class="btn" id="pf">นำไปกรอกในฟอร์มบันทึกข้อมูล</button><label>ชื่อหน่วยบริการ (แสดงที่หัวหน้าแรก)<input id="pn" value="${esc(HC.name)}"></label><button class="btn g" id="ph">ตั้งเป็นที่ตั้งหน่วยบริการ</button>${o?`<label>หรือกำหนดให้ผู้ป่วยที่ยังไม่มีพิกัด<select id="ps">${o}</select></label><button class="btn g" id="pa">บันทึกพิกัดให้รายนี้</button>`:''}</div></div>`;
  $('#pf').onclick=()=>{$('#f_lat').value=ll.lat.toFixed(6);$('#f_lng').value=ll.lng.toFixed(6);$('#nav .tab[data-t=frm]').click()};
- $('#ph').onclick=()=>{setHC($('#hn').value,ll.lat,ll.lng);PL.clearLayers();$('#pk').innerHTML='';drawM(true)};
+ $('#ph').onclick=()=>{setHC($('#pn').value,ll.lat,ll.lng);PL.clearLayers();$('#pk').innerHTML='';drawM(true)};
  const pa=$('#pa');if(pa)pa.onclick=()=>{const r=D.find(x=>x._id===+$('#ps').value);if(!r)return;r.lat=+ll.lat.toFixed(6);r.lng=+ll.lng.toFixed(6);save();PL.clearLayers();$('#pk').innerHTML='';drawM(false);msg('#mm',`บันทึกพิกัดให้ลำดับ ${esc(r.no)} แล้ว`,'s')}}
 const RC='<svg viewBox="0 0 30 30" width="30" height="30"><rect x="1" y="1" width="28" height="28" rx="4" fill="#fff" stroke="#dc2626" stroke-width="1.5"/><path d="M11.5 5h7v6.5H25v7h-6.5V25h-7v-6.5H5v-7h6.5z" fill="#dc2626"/></svg>';
-function setHC(n,la,ln){const g=gp(la,ln);HC={name:String(n||'').trim(),lat:g.lat,lng:g.lng};try{localStorage.setItem('dhfhc',JSON.stringify(HC))}catch(e){}$('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng}
-$('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng;
-$('#hs').onclick=()=>{setHC($('#hn').value,$('#hy').value,$('#hx').value);drawM(true)};
-$('#hd').onclick=()=>{setHC('','','');drawM(true)};
+function setHC(n,la,ln){const g=gp(la,ln);HC={name:String(n||'').trim(),lat:g.lat,lng:g.lng};try{localStorage.setItem('dhfhc',JSON.stringify(HC))}catch(e){}$('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng;hdr()}
+let ST={logo:'',tambon:'',amphoe:'',province:''};try{ST=Object.assign(ST,JSON.parse(localStorage.getItem('dhfst')||'{}'))}catch(e){}
+const DL='<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#c2410c"/><text x="50" y="61" text-anchor="middle" font-size="30" font-weight="700" fill="#fff" font-family="Sarabun,sans-serif">DHF</text></svg>';
+function hdr(){const L=ST.logo?`<img alt="โลโก้" src="${ST.logo}">`:DL;$('#lg').innerHTML=L;$('#lgp').innerHTML=L;
+ const p=[HC.name,ST.tambon&&'ต.'+ST.tambon,ST.amphoe&&'อ.'+ST.amphoe,ST.province&&'จ.'+ST.province].filter(Boolean);
+ $('#hu').textContent=p.length?p.join(' '):'ยังไม่ได้ตั้งชื่อหน่วยบริการ (ตั้งค่าได้ที่แท็บ "ตั้งค่า")'}
+const cl_=v=>String(v||'').trim().replace(/^(ต\.|ตำบล|อ\.|อำเภอ|จ\.|จังหวัด)\s*/,'');
+function setST(){ST.tambon=cl_($('#uT').value);ST.amphoe=cl_($('#uA').value);ST.province=cl_($('#uP').value);try{localStorage.setItem('dhfst',JSON.stringify(ST))}catch(e){}hdr()}
+$('#uT').value=ST.tambon;$('#uA').value=ST.amphoe;$('#uP').value=ST.province;
+$('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng;hdr();
+$('#hs').onclick=()=>{setHC($('#hn').value,$('#hy').value,$('#hx').value);setST();drawM(true);msg('#stm','บันทึกการตั้งค่าแล้ว','s')};
+$('#hd').onclick=()=>{setHC($('#hn').value,'','');drawM(true);msg('#stm','ลบพิกัดแล้ว (ชื่อหน่วยบริการยังคงอยู่)','s')};
+$('#lgf').onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const n=192,c=document.createElement('canvas');c.width=c.height=n;const s=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,n,n);ST.logo=c.toDataURL('image/png');try{localStorage.setItem('dhfst',JSON.stringify(ST))}catch(x){msg('#stm','เก็บโลโก้ในเบราว์เซอร์ไม่สำเร็จ','e')}hdr();msg('#stm','เปลี่ยนโลโก้แล้ว','s')};im.onerror=()=>msg('#stm','อ่านไฟล์รูปไม่ได้','e');im.src=fr.result};fr.readAsDataURL(f)};
+$('#lgd').onclick=()=>{ST.logo='';setST();msg('#stm','ใช้โลโก้เริ่มต้นแล้ว','s')};
 $('#my').onchange=$('#md').onchange=()=>drawM(true);$('#mr').oninput=()=>drawM(false);$('#fp').onclick=()=>$('#nav .tab[data-t=map]').click();
 async function sv(n,t){const c=window.claude&&await claude.use('downloads');if(!c)return msg('#mm','ฟังก์ชันดาวน์โหลดไม่พร้อมใช้งานในมุมมองนี้','e');try{await c.save({filename:n,data:new Blob([t])})}catch(e){if(e.code!=='declined')msg('#mm','บันทึกไฟล์ไม่สำเร็จ ('+esc(e.code||e.message)+')','e')}}
 const gl=()=>mrows().filter(hasG);
