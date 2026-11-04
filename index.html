@@ -67,7 +67,7 @@ header p{font-size:13px}footer{max-width:1200px;margin:auto;padding:6px 16px 28p
 <p class="mu">ตั้งพิกัดได้ด้วยการคลิกบนแผนที่ในแท็บ Spot map แล้วกด "ตั้งเป็นที่ตั้งหน่วยบริการ"</p></div>
 <div class="card"><h3>เชื่อมต่อ Google Sheets</h3>
 <div class="grid"><label>Web App URL (Apps Script, ลงท้าย /exec)<input id="sU" placeholder="https://script.google.com/macros/s/.../exec"></label><label>รหัสผ่าน (TOKEN ที่ตั้งใน Code.gs)<input id="sT" type="password"></label></div>
-<div class="row" style="margin-top:10px"><label style="display:flex;gap:8px;align-items:center;flex:0 0 auto"><input id="sA" type="checkbox" style="width:auto;margin:0">ซิงก์อัตโนมัติ (ดึงตอนเปิดแอพ + ส่งทุกครั้งที่บันทึก/ลบ/นำเข้า)</label><button class="btn g" id="sD">ดึงข้อมูลจาก Sheet</button><button class="btn g" id="sP">ส่งข้อมูลทั้งหมดขึ้น Sheet</button></div><div id="sm"></div></div>
+<div class="row" style="margin-top:10px"><label style="display:flex;gap:8px;align-items:center;flex:0 0 auto"><input id="sA" type="checkbox" style="width:auto;margin:0">ซิงก์อัตโนมัติ (ดึงตอนเปิดแอพ + ส่งทุกครั้งที่บันทึก/ลบ/นำเข้า)</label><button class="btn g" id="sD">ดึงข้อมูลจาก Sheet</button><button class="btn g" id="sP">ส่งข้อมูลทั้งหมดขึ้น Sheet</button><button class="btn g" id="sL">สร้างลิงก์สำหรับเครื่องใหม่</button></div><label style="margin-top:10px">ลิงก์สำหรับเปิดบนอุปกรณ์ใหม่ (มีรหัสผ่านรวมอยู่ ส่งผ่านช่องทางส่วนตัวเท่านั้น)<input id="sLo" readonly onclick="this.select()"></label><p class="mu">ข้อมูลผู้ป่วย โลโก้ ชื่อหน่วยบริการ และพิกัด จะถูกเก็บใน Google Sheet เมื่อเชื่อมต่อแล้ว อุปกรณ์ใหม่เปิดลิงก์นี้ครั้งเดียวก็ดึงข้อมูลได้</p><div id="sm"></div></div>
 </section>
 <section id="map" class="hide"><div class="card"><div class="row"><label>ปี (พ.ศ.)<select id="my"></select></label><label>ชื่อโรค<select id="md"></select></label><label>รัศมีวงกลม (เมตร)<input id="mr" type="number" min="1" value="100"></label><button class="btn g" id="mc">ส่งออก CSV (Google My Maps)</button><button class="btn g" id="mg">ส่งออก GeoJSON</button></div>
 <p class="mu" id="mi"></p><div id="mapc"></div><div id="pk"></div><div id="mm"></div>
@@ -257,7 +257,7 @@ function pick(ll){PL.clearLayers();const rad=Math.max(1,+$('#mr').value||100);L.
  const o=D.filter(r=>!hasG(r)).slice(0,300).map(r=>`<option value="${r._id}">${esc(r.no)} · ${esc(r.name||'-')} · ${esc((r.addr||'').slice(0,28))}</option>`).join('');
  $('#pk').innerHTML=`<div class="m"><b>จุดที่มาร์ค:</b> ${ll.lat.toFixed(6)}, ${ll.lng.toFixed(6)}<div class="row" style="margin-top:8px"><button class="btn" id="pf">นำไปกรอกในฟอร์มบันทึกข้อมูล</button><label>ชื่อหน่วยบริการ (แสดงที่หัวหน้าแรก)<input id="pn" value="${esc(HC.name)}"></label><button class="btn g" id="ph">ตั้งเป็นที่ตั้งหน่วยบริการ</button>${o?`<label>หรือกำหนดให้ผู้ป่วยที่ยังไม่มีพิกัด<select id="ps">${o}</select></label><button class="btn g" id="pa">บันทึกพิกัดให้รายนี้</button>`:''}</div></div>`;
  $('#pf').onclick=()=>{$('#f_lat').value=ll.lat.toFixed(6);$('#f_lng').value=ll.lng.toFixed(6);$('#nav .tab[data-t=frm]').click()};
- $('#ph').onclick=()=>{setHC($('#pn').value,ll.lat,ll.lng);PL.clearLayers();$('#pk').innerHTML='';drawM(true)};
+ $('#ph').onclick=()=>{setHC($('#pn').value,ll.lat,ll.lng);pushSet();PL.clearLayers();$('#pk').innerHTML='';drawM(true)};
  const pa=$('#pa');if(pa)pa.onclick=()=>{const r=D.find(x=>x._id===+$('#ps').value);if(!r)return;r.lat=+ll.lat.toFixed(6);r.lng=+ll.lng.toFixed(6);save();PL.clearLayers();$('#pk').innerHTML='';drawM(false);msg('#mm',`บันทึกพิกัดให้ลำดับ ${esc(r.no)} แล้ว`,'s')}}
 const RC='<svg viewBox="0 0 30 30" width="30" height="30"><rect x="1" y="1" width="28" height="28" rx="4" fill="#fff" stroke="#dc2626" stroke-width="1.5"/><path d="M11.5 5h7v6.5H25v7h-6.5V25h-7v-6.5H5v-7h6.5z" fill="#dc2626"/></svg>';
 function setHC(n,la,ln){const g=gp(la,ln);HC={name:String(n||'').trim(),lat:g.lat,lng:g.lng};try{localStorage.setItem('dhfhc',JSON.stringify(HC))}catch(e){}$('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng;hdr()}
@@ -270,27 +270,36 @@ const cl_=v=>String(v||'').trim().replace(/^(ต\.|ตำบล|อ\.|อำเ�
 function setST(){ST.tambon=cl_($('#uT').value);ST.amphoe=cl_($('#uA').value);ST.province=cl_($('#uP').value);try{localStorage.setItem('dhfst',JSON.stringify(ST))}catch(e){}hdr()}
 $('#uT').value=ST.tambon;$('#uA').value=ST.amphoe;$('#uP').value=ST.province;
 $('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng;hdr();
-$('#hs').onclick=()=>{setHC($('#hn').value,$('#hy').value,$('#hx').value);setST();drawM(true);msg('#stm','บันทึกการตั้งค่าแล้ว','s')};
-$('#hd').onclick=()=>{setHC($('#hn').value,'','');drawM(true);msg('#stm','ลบพิกัดแล้ว (ชื่อหน่วยบริการยังคงอยู่)','s')};
-$('#lgf').onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const n=192,c=document.createElement('canvas');c.width=c.height=n;const s=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,n,n);ST.logo=c.toDataURL('image/png');try{localStorage.setItem('dhfst',JSON.stringify(ST))}catch(x){msg('#stm','เก็บโลโก้ในเบราว์เซอร์ไม่สำเร็จ','e')}hdr();msg('#stm','เปลี่ยนโลโก้แล้ว','s')};im.onerror=()=>msg('#stm','อ่านไฟล์รูปไม่ได้','e');im.src=fr.result};fr.readAsDataURL(f)};
-$('#lgd').onclick=()=>{ST.logo='';setST();msg('#stm','ใช้โลโก้เริ่มต้นแล้ว','s')};
+$('#hs').onclick=()=>{setHC($('#hn').value,$('#hy').value,$('#hx').value);setST();drawM(true);pushSet();msg('#stm','บันทึกการตั้งค่าแล้ว','s')};
+$('#hd').onclick=()=>{setHC($('#hn').value,'','');drawM(true);pushSet();msg('#stm','ลบพิกัดแล้ว (ชื่อหน่วยบริการยังคงอยู่)','s')};
+$('#lgf').onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const n=144,c=document.createElement('canvas');c.width=c.height=n;const s=Math.min(im.width,im.height),x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,n,n);x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,n,n);ST.logo=c.toDataURL('image/jpeg',.82);if(ST.logo.length>45000)ST.logo=c.toDataURL('image/jpeg',.5);try{localStorage.setItem('dhfst',JSON.stringify(ST))}catch(x){msg('#stm','เก็บโลโก้ในเบราว์เซอร์ไม่สำเร็จ','e')}hdr();pushSet();msg('#stm','เปลี่ยนโลโก้แล้ว','s')};im.onerror=()=>msg('#stm','อ่านไฟล์รูปไม่ได้','e');im.src=fr.result};fr.readAsDataURL(f)};
+$('#lgd').onclick=()=>{ST.logo='';setST();pushSet();msg('#stm','ใช้โลโก้เริ่มต้นแล้ว','s')};
 $('#my').onchange=$('#md').onchange=()=>drawM(true);$('#mr').oninput=()=>drawM(false);$('#fp').onclick=()=>$('#nav .tab[data-t=map]').click();
 async function sv(n,t){const c=window.claude&&await claude.use('downloads');if(!c)return msg('#mm','ฟังก์ชันดาวน์โหลดไม่พร้อมใช้งานในมุมมองนี้','e');try{await c.save({filename:n,data:new Blob([t])})}catch(e){if(e.code!=='declined')msg('#mm','บันทึกไฟล์ไม่สำเร็จ ('+esc(e.code||e.message)+')','e')}}
 const gl=()=>mrows().filter(hasG);
 $('#mc').onclick=()=>{const q=s=>'"'+String(s??'').replace(/"/g,'""')+'"';sv('DHF_spotmap.csv','\ufeff'+['ละติจูด,ลองจิจูด,ชื่อ,โรค,อายุ,เพศ,วันเริ่มป่วย,ที่อยู่',...gl().map(r=>[r.lat,r.lng,q(r.name),q(r.dis),r.age,r.sex,fd(r.dOn),q(r.addr)].join(','))].join('\n'))};
 $('#mg').onclick=()=>sv('DHF_spotmap.json',JSON.stringify({type:'FeatureCollection',features:gl().map(r=>({type:'Feature',geometry:{type:'Point',coordinates:[r.lng,r.lat]},properties:{name:r.name,disease:r.dis,age:r.age,sex:r.sex,onset:r.dOn,address:r.addr}}))}));
 // ---------- Google Sheets sync ----------
-let SY={url:'',tok:'',auto:false};try{SY=Object.assign(SY,JSON.parse(localStorage.getItem('dhfsync')||'{}'))}catch(e){}
+const DEFAULT_URL='';/* ใส่ Web App URL (/exec) ที่นี่ได้ เพื่อไม่ต้องกรอกทุกเครื่อง */
+let SY={url:DEFAULT_URL,tok:'',auto:!!DEFAULT_URL};try{SY=Object.assign(SY,JSON.parse(localStorage.getItem('dhfsync')||'{}'))}catch(e){}
+try{const m=location.hash.match(/^#cfg=(.+)$/);if(m){const c=JSON.parse(decodeURIComponent(escape(atob(m[1]))));SY={...SY,url:c.u,tok:c.t,auto:true};localStorage.setItem('dhfsync',JSON.stringify(SY));history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+const setVals=()=>({logo:ST.logo,name:HC.name,tambon:ST.tambon,amphoe:ST.amphoe,province:ST.province,lat:HC.lat,lng:HC.lng});
+async function pushSet(){if(!SY.url)return;try{await gs({op:'settings',values:setVals()});st('บันทึกการตั้งค่าขึ้น Google Sheet แล้ว '+new Date().toLocaleTimeString('th-TH'))}catch(e){st('บันทึกการตั้งค่าขึ้น Sheet ไม่สำเร็จ: '+esc(e.message),1)}}
+function applySet(o){if(!o||!Object.keys(o).length)return;ST.logo=o.logo??ST.logo;ST.tambon=o.tambon??ST.tambon;ST.amphoe=o.amphoe??ST.amphoe;ST.province=o.province??ST.province;
+ const g='lat' in o?gp(o.lat,o.lng):{lat:HC.lat,lng:HC.lng};HC={name:o.name??HC.name,lat:g.lat,lng:g.lng};
+ try{localStorage.setItem('dhfst',JSON.stringify(ST));localStorage.setItem('dhfhc',JSON.stringify(HC))}catch(e){}
+ $('#hn').value=HC.name;$('#hy').value=HC.lat;$('#hx').value=HC.lng;$('#uT').value=ST.tambon;$('#uA').value=ST.amphoe;$('#uP').value=ST.province;hdr()}
 const toRow=r=>[r.no,r.name,r.sex,r.age,r.addr,fd(r.dRep),r.tRep,fd(r.dOn),fd(r.dSeen),r.dis,r.src,r.yr,r.lat,r.lng,r.uid];
 async function gs(b){if(!SY.url)throw new Error('ยังไม่ได้ตั้งค่า URL');const r=await fetch(SY.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:SY.tok,...b})}),j=await r.json();if(!j.ok)throw new Error(j.error||'ผิดพลาด');return j}
 async function pull(){if(!SY.url)throw new Error('ยังไม่ได้ตั้งค่า URL');const r=await fetch(SY.url+(SY.url.includes('?')?'&':'?')+'token='+encodeURIComponent(SY.tok)),j=await r.json();if(!j.ok)throw new Error(j.error||'ผิดพลาด');
- D=j.rows.map(a=>{const o={};K.forEach((k,i)=>o[k]=a[i]);o.uid=a[14]||undefined;return mk(o)});save()}
+ D=j.rows.map(a=>{const o={};K.forEach((k,i)=>o[k]=a[i]);o.uid=a[14]||undefined;return mk(o)});save();applySet(j.settings)}
 const st=(t,e)=>msg('#sm',t,e?'e':'s');
 async function sy(b){if(!SY.auto||!SY.url)return;try{await gs(b);st('ซิงก์ไป Google Sheet แล้ว '+new Date().toLocaleTimeString('th-TH'))}catch(e){st('ซิงก์ไม่สำเร็จ: '+esc(e.message),1)}}
 function cfg(){SY={url:$('#sU').value.trim(),tok:$('#sT').value.trim(),auto:$('#sA').checked};try{localStorage.setItem('dhfsync',JSON.stringify(SY))}catch(e){}}
 $('#sU').value=SY.url;$('#sT').value=SY.tok;$('#sA').checked=SY.auto;['sU','sT','sA'].forEach(i=>$('#'+i).onchange=cfg);
+$('#sL').onclick=async()=>{cfg();if(!SY.url||!SY.tok)return st('กรอก URL และรหัสผ่านก่อน','e');const l=location.href.split('#')[0]+'#cfg='+btoa(unescape(encodeURIComponent(JSON.stringify({u:SY.url,t:SY.tok}))));$('#sLo').value=l;try{await navigator.clipboard.writeText(l);st('คัดลอกลิงก์แล้ว')}catch(e){st('สร้างลิงก์แล้ว คัดลอกจากช่องด้านบนได้เลย')}};
 $('#sD').onclick=async()=>{cfg();try{st('กำลังดึงข้อมูล...');await pull();st(`ดึงข้อมูลแล้ว ${D.length} รายการ`);tb()}catch(e){st('ไม่สำเร็จ: '+esc(e.message),1)}};
-$('#sP').onclick=async()=>{cfg();try{st('กำลังส่งข้อมูล...');await gs({op:'replace',rows:D.map(toRow)});st(`ส่งขึ้น Sheet แล้ว ${D.length} รายการ (แทนที่ข้อมูลใน Sheet)`)}catch(e){st('ไม่สำเร็จ: '+esc(e.message),1)}};
+$('#sP').onclick=async()=>{cfg();try{st('กำลังส่งข้อมูล...');await gs({op:'replace',rows:D.map(toRow)});await gs({op:'settings',values:setVals()});st(`ส่งขึ้น Sheet แล้ว ${D.length} รายการ (แทนที่ข้อมูลใน Sheet)`)}catch(e){st('ไม่สำเร็จ: '+esc(e.message),1)}};
 lists();an();
 if(SY.auto&&SY.url)pull().then(()=>{lists();an();tb()}).catch(e=>st('ดึงข้อมูลตอนเปิดแอพไม่สำเร็จ: '+esc(e.message),1));
 </script></body></html>
